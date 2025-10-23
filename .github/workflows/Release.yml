@@ -14,18 +14,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Get version
-        # id must be specified to retrieve the output of the step
-        id: version-step
-        uses: michmich112/extract-version@main
-        with:
-          # specify here the path to your version file (e.g. package.json, pom.xml...)
-          version-file: VERSION
-          schema: major.minor.build
-      - name: test
-        run: |
-          echo "Version to Release -> $VERSION"
-        env:
-          VERSION: ${{ steps.version-step.outputs.version }}
+      # id must be specified to retrieve the output of the step
+      id: version-step
+      uses: michmich112/extract-version@main
+      with:
+        # specify here the path to your version file (e.g. package.json, pom.xml...)
+        version-file: VERSION
+        schema: major.minor.build
+    - name: test
+      run: |
+        echo "Version to Release -> $VERSION"
+      env:
+        VERSION: ${{ steps.version-step.outputs.version }}
 
     - name: Build CoreDNS
       run: make build-append
