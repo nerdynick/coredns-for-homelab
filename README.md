@@ -1,70 +1,24 @@
-# CoreDNS Customizer
+# CoreDNS for Homelab
 
-CoreDNS Customiser is mostly a build script wrapping around CoreDNS an it's native build scripts to support customizing the inclusion of plugins without the need to fork and modify the core repo.
+This is a custome build of CoreDNS that I used within my homelab. 
+It's intent is to include all the plugins I used to help automate much of the DNS resolution and other things within the homelab and just self-hosted services. 
+If you find some additional plugins that you think I should include. Please feel free to open an Issue or PR for the changes. Also open to learning about other plugins out there that might assist in running an even smarter DNS services at home.
 
-Traditionally CoreDNS wants you to fork and modify the `plugin.cfg` and build from there. 
-While this can be good practise in Enterprise production deployments as you are managing your own full release cycle. This doesn't quite work for everyone, especially if you're aim is to just use an open source plugin or two.
+# The Plugins
 
-# Usage
+## Traefik
 
-The included Makefile is the heart of everything. It contains a collection of targets to achieve what you might be looking for. If you don't see a final release target, please fill free to at least open an issue with details or PR with contribution.
+The (scottt732/coredns-traefik)[https://github.com/scottt732/coredns-traefik] plugin allows you to call the API of your Traefik instance(s) to discover services and their addresses. 
 
-## Building CoreDNS Executable
+This plugin:
+> Extracts FQDN's from the Host() and HostSNI() values in traefik's http router rules (Traefik's /api/http/routers endpoint). Returns a CNAME result with the traefik instance's domain.
 
-1. Step 1 - Define your plugins
+What's great about this plugin is that you can pair it with Traefiks Docker provider, for example, to 1st auto discover your docker containers, their exposed ports, TLS settings, and what address(es) it is looking to be exposed as via Traefik and Docker Labels. With those containers/services now discovered, proxed, and hopefully now TLS enabled, this plugin then setups all the DNS configs to enable calling those services. 
 
-Either fork this repo and customize or copy the Makefile and create a `plugin.cfg` file in your own project. This plugin file, `plugin.cfg`, can be treated either as an append too the CoreDNS default plugins, or a replace all default plugins.
+*NOTE:* I have plans to publish a Blog/Video show caseing how to set this up. Stay tuned for when that goes live.
 
-2. Step 2 - Build the Executables
+## k8s_gateway
 
-```bash
-# For a full override/replace of default plugins
-make build-override
+The (k8s_gateway)[https://github.com/k8s-gateway/k8s_gateway] plugin is my prefered avenue for providing DNS resolution for externally exposed Kubernetes services and more. 
 
-# for an append to the default plugins
-make build-append
-```
-
-Example with all optional variables defined with their default values
-```bash
-make build-append GIT_BRANCH=master GIT_REPO=https://github.com/coredns/coredns.git LINUX_ARCH="amd64 arm arm64 riscv64"
-```
-
-*Note:* The `LINUX_ARCH` variable only controls all the architecture that are built against the Linux OS. Darwin/MacOS will always be built with amd64 & arm64 and windows will always be built with amd64.
-
-If this is all you need, then you are done and can find the built executables within the `coredns/build/{OS}/{ARCH}` folder. Otherwise continue on for all release targets you are looking for.
-
-## Tarball and Release on Github
-
-```bash
-make tar github-push GITHUB_OWNER=nerdynik GITHUB_REPO_NAME=coredns-customizer GITHUB_ACCESS_TOKEN={Your Token, can also be done as ENV Var}
-```
-
-Example with all optional variables defined with their default values
-```bash
-# Creating the tarballs
-make tar LINUX_ARCH="amd64 arm arm64 riscv64"
-
-# Pushing them up to Github as a Release
-make github-push VERSION={CoreDNS Version} GITHUB_OWNER=nerdynick GITHUB_REPO_NAME=coredns-customizer GITHUB_ACCESS_TOKEN={Your Token, can also be done as ENV Var}
-```
-
-## Docker Image Build and Push to DockerHub
-
-```bash
-# If building on a docker host that has a setup to use a keychain for auth. These 2 ENV vars still technically need to be defined to get a 100% successful push. However if you leave them out, everything will be pushed up but you will see additional image tags as CoreDNS uses a set of CURL calls directly to clean up manifests once it as created the 2 multi-platform manifests. 
-
-export DOCKER_LOGIN={Your Docker Hub username}
-export DOCKER_PASSWORD={Your Docker Hub password}
-make docker-build docker-push DOCKER_REPO=nerdynik DOCKER_NAME=coredns
-```
-
-Example with all optional variables defined with their default values
-```bash
-export DOCKER_LOGIN={Your Docker Hub username}
-export DOCKER_PASSWORD={Your Docker Hub password}
-
-make docker-build LINUX_ARCH="amd64 arm arm64 riscv64" DOCKER_REPO=nerdynik DOCKER_NAME=coredns VERSION={CoreDNS Version}
-
-make docker-push LINUX_ARCH="amd64 arm arm64 riscv64" DOCKER_REPO=nerdynik DOCKER_NAME=coredns VERSION={CoreDNS Version}
-```
+While I include this plugin in this build, the developers publish their own docker images with each update/release. Their image is a much more stripped down version, which might be more ideal for usage as a single sub-zoned resolution for just your K8s services. 
