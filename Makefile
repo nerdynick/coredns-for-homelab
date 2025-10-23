@@ -100,7 +100,3 @@ endif
 .PHONY: docker-push
 docker-push:
 	env -C ./coredns make -f Makefile.docker docker-push LINUX_ARCH='$(LINUX_ARCH)' VERSION='$(VERSION)'  DOCKER='$(DOCKER_REPO)' NAME='$(DOCKER_NAME)'
-
-.PHONY: clean
-clean:
-	rm -Rf ./coredns
