@@ -1,0 +1,8 @@
+[UNIT]
+Description=CoreDNS is a simple light weight DNS server
+After=network.target
+
+[Service]
+ExecStart=/usr/local/coredns/bin/coredns -conf /usr/local/coredns/etc/Corefile
+Type=exec
+Restart=on-failure

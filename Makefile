@@ -29,6 +29,12 @@ DOCKER_REPO?=
 DOCKER_NAME?=coredns
 DOCKER_IMAGE_NAME:=$(DOCKER_REPO)/$(DOCKER_NAME)
 
+##
+# Packaging Variables
+##
+
+MAINTAINER_NAME=$(shell git config user.name)
+MAINTAINER_EMAIL=$(shell git config user.email)
 
 ##
 # Common Build Targets
@@ -112,3 +118,28 @@ endif
 .PHONY: docker-push
 docker-push:
 	env -C ./coredns make -f Makefile.docker docker-push LINUX_ARCH='$(LINUX_ARCH)' VERSION='$(VERSION)'  DOCKER='$(DOCKER_REPO)' NAME='$(DOCKER_NAME)'
+
+.PHONY: clean
+clean:
+	rm -Rf ./coredns
+
+##
+# Debian Packaging Targets
+##
+
+.PHONY: package-deb
+package-deb:
+	rm -Rf ./coredns/package/deb
+	for arch in $(LINUX_ARCH); do \
+		mkdir -p ./coredns/package/deb/coredns_$${arch}/usr/local/coredns/bin ;\
+		mkdir -p ./coredns/package/deb/coredns_$${arch}/usr/local/coredns/etc ;\
+		mkdir -p ./coredns/package/deb/coredns_$${arch}/etc/coredns ;\
+		mkdir -p ./coredns/package/deb/coredns_$${arch}/etc/systemd/system/ ;/
+		mkdir -p ./coredns/package/deb/coredns_$${arch}/DEBIAN ;\
+		cp packaging/Corefile ./coredns/package/deb/coredns_$${arch}/usr/local/coredns/etc/Corefile ;\
+		cp packaging/coredns.service ./coredns/package/deb/coredns_$${arch}/etc/systemd/system/coredns.service ;\
+		cp ./coredns/build/linux/$${arch}/coredns ./coredns/package/deb/coredns_$${arch}/usr/local/coredns/bin/coredns ;\
+		cat packaging/control.j2 | sed -e "s/{{VERSION}}/$(VERSION)/" | sed -e "s/{{ARCHITECTURE}}/$${arch}/" | sed -e "s/{{MAINTAINER_NAME}}/$(MAINTAINER_NAME)/" | sed -e "s/{{MAINTAINER_EMAIL}}/$(MAINTAINER_EMAIL)/" > ./coredns/package/deb/coredns_$${arch}/DEBIAN/control ;\
+		dpkg-deb -b --root-owner-group ./coredns/package/deb/coredns_$${arch} ./coredns/release/coredns_$${arch}.deb ;\
+		sha256sum ./coredns/release/coredns_$${arch}.deb > ./coredns/release/coredns_$${arch}.deb.sha256 ;\
+	done

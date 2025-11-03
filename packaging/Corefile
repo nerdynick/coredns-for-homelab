@@ -1,0 +1,5 @@
+# STOP - DO NOT EDIT
+# This file is maintained by the package installation.
+# Instead place your configuration files in /etc/coredns and they will be pickedup after a restart
+
+import /etc/coredns/*
