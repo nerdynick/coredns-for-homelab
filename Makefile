@@ -16,12 +16,9 @@ LINUX_ARCH:=amd64 arm arm64 riscv64
 # Default version used for the releases will be that of the CoreDNS repo.
 VERSION=$(shell grep 'CoreVersion' ./coredns/coremain/version.go | awk '{ print $$3 }' | tr -d '"')
 
-# Access token for authentication to Github APIs
-GITHUB_ACCESS_TOKEN?=
-# Github ID aka Username/Company that owns the repo
-GITHUB_OWNER?=
-# Github Repo Name
-GITHUB_REPO_NAME?=
+# Github Repo
+# Examples: username/repo or github.com/username/repo
+GITHUB_REPO=$(shell gh repo view --json url -t '{{.url}}')
 
 ##
 # If you intend to do any docker image builds and push's.
@@ -64,11 +61,22 @@ tar:
 	for asset in `ls -A ./coredns/release/*tgz`; do \
 		sha256sum $${asset} > $${asset}.sha256;\
 	done
+
+##
+# Github Targets
+##
+.PHONY: github-create-release
+github-create-release:
+	gh release create $(VERSION) --generate-notes --draft --repo $(GITHUB_REPO)
 	
 
-.PHONY: github-push
-github-push:
-	env -C ./coredns make -f Makefile.release github-push VERSION='$(VERSION)' GITHUB='$(GITHUB_OWNER)' NAME='$(GITHUB_REPO_NAME)' GITHUB_ACCESS_TOKEN='$(GITHUB_ACCESS_TOKEN)'
+.PHONY: github-upload
+github-upload:
+	gh release upload $(VERSION) ./coredns/release/* --repo $(GITHUB_REPO)
+
+.PHONY: github-publish-release
+github-publish-release:
+	gh release edit  $(VERSION) --draft=false  --repo $(GITHUB_REPO)
 
 ##
 # Docker Build and Release Targets
