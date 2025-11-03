@@ -61,6 +61,10 @@ build-append: setup
 .PHONY: tar
 tar:
 	env -C ./coredns make -f Makefile.release tar LINUX_ARCH='$(LINUX_ARCH)'
+	for asset in `ls -A ./coredns/release/*tgz`; do \
+		sha256sum $${asset} > $${asset}.sha256;\
+	done
+	
 
 .PHONY: github-push
 github-push:
