@@ -40,9 +40,12 @@ MAINTAINER_EMAIL=$(shell git config user.email)
 # Common Build Targets
 ##
 
-.PHONY: setup
-setup:
+.PHONY: clean
+clean:
 	rm -Rf ./coredns
+
+.PHONY: setup
+setup: clean
 	git clone -b $(GIT_BRANCH) $(GIT_REPO)
 
 .PHONY: build-override
@@ -59,6 +62,8 @@ build-append: setup
 
 ##
 # Tarball and Tarball Release Targets
+#
+# Create Tarballs & SHA256 Checksums
 ##
 
 .PHONY: tar
@@ -70,6 +75,8 @@ tar:
 
 ##
 # Github Targets
+#
+# Create Releases, Upload the Tarballs and Checksums, and Publish the Release
 ##
 .PHONY: github-create-release
 github-create-release:
@@ -88,21 +95,22 @@ github-publish-release:
 # Docker Build and Release Targets
 ##
 
+# Create Build Dirs for each Architecture
 .PHONY: setup-docker
 setup-docker:
 	for arch in $(LINUX_ARCH); do \
 		mkdir -p ./coredns/build/docker/$${arch}; \
 		cp ./coredns/build/linux/$${arch}/coredns ./coredns/build/docker/$${arch}/coredns; \
+		cp ./coredns/Dockerfile ./coredns/build/docker/$${arch} ; \
 	done
 
 .PHONY: docker-build
 docker-build: setup-docker
 ifeq ($(DOCKER_REPO),)
-	$(error "Please specify Docker registry to use. Use DOCKER_REPO=coredns for releases")
+	$(error "Please specify Docker registry to use. Use `DOCKER_REPO=coredns` for releases")
 else
 	docker version
 	for arch in $(LINUX_ARCH); do \
-	    cp ./coredns/Dockerfile ./coredns/build/docker/$${arch} ; \
 	    DOCKER_ARGS=""; \
 	    if [ "$${arch}" = "riscv64" ]; then \
 	        DOCKER_ARGS="--build-arg=DEBIAN_IMAGE=debian:unstable-slim --build-arg=BASE=ghcr.io/go-riscv/distroless/static-unstable:nonroot"; \
@@ -110,7 +118,7 @@ else
 	    DOCKER_BUILDKIT=1 docker build --provenance false --platform=linux/$${arch} -t $(DOCKER_IMAGE_NAME):$${arch}-$(VERSION) $${DOCKER_ARGS} ./coredns/build/docker/$${arch} ;\
 	done
 endif
-# We don't call the in docker-build from CoreDNS since they don't define the OS.
+# We don't call the in docker-build from CoreDNS directly since they don't define the OS, `--provenance false`.
 # Which prevent the usage of any other OS from doing the docker builts. 
 # E.G. If you attempt to build on MacOS it'll fail.
 #	env -C ./coredns make -f Makefile.docker docker-build LINUX_ARCH='$(LINUX_ARCH)' VERSION='$(VERSION)' DOCKER='$(DOCKER_REPO)' NAME='$(DOCKER_NAME)'
@@ -118,10 +126,6 @@ endif
 .PHONY: docker-push
 docker-push:
 	env -C ./coredns make -f Makefile.docker docker-push LINUX_ARCH='$(LINUX_ARCH)' VERSION='$(VERSION)'  DOCKER='$(DOCKER_REPO)' NAME='$(DOCKER_NAME)'
-
-.PHONY: clean
-clean:
-	rm -Rf ./coredns
 
 ##
 # Debian Packaging Targets
