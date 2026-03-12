@@ -17,16 +17,20 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Cache Docker
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
+          save-always: true
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
       - name: Cache GoLang
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
-          path: ~/go
+          save-always: true
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{ runner.os }}-golang-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-golang-
@@ -54,9 +58,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          # While this say password, it is recommended to use PATs. See: https://docs.docker.com/security/access-tokens/
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
       - name: Docker Build and Push
-        run: make docker-build docker-push DOCKER_REPO=${{ vars.DOCKERHUB_REPO }} DOCKER_NAME=${{ vars.DOCKERHUB_NAME }}
+        run: make docker-build docker-push 
         env:
+          DOCKER_REPO: ${{ vars.DOCKERHUB_REPO }} 
+          DOCKER_NAME: ${{ vars.DOCKERHUB_NAME }}
           DOCKER_LOGIN: ${{ secrets.DOCKERHUB_USERNAME }}
           # While this say password, it is recommended to use PATs. See: https://docs.docker.com/security/access-tokens/
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
