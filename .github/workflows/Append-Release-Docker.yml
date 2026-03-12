@@ -11,6 +11,9 @@ jobs:
   build:
     name: Build-Append and Release (Docker Hub)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      attestations: write
     steps:
       - uses: actions/checkout@v6
       - name: Get version
