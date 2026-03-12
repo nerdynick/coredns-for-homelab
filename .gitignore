@@ -1,5 +1,5 @@
-./coredns
-./coredns/**
+coredns
+coredns/**
 .vscode/settings.json
-./ignore
-./ignore/**
+ignore
+ignore/**
