@@ -1,6 +1,7 @@
 name: Build via Append and Release to GH & Docker
 
 on:
+  workflow_dispatch: {}
   push:
     branches: 
       - main
