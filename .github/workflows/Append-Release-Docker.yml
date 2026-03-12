@@ -2,9 +2,10 @@ name: Build via Append and Release to GH & Docker
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: 
+      - main
+    paths:
+      - 'VERSION'
 
 
 jobs:
