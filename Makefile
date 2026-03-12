@@ -15,7 +15,7 @@ LINUX_ARCH:=amd64 arm arm64 riscv64
 
 # Default version used for the releases will be that of the CoreDNS repo.
 COREDNS_VERSION=$(shell grep 'CoreVersion' ./coredns/coremain/version.go | awk '{ print $$3 }' | tr -d '"')
-CUSTOMIZED_VERSION:=
+CUSTOMIZED_VERSION?=
 VERSION=$(CUSTOMIZED_VERSION)-$(COREDNS_VERSION)
 
 # Github Repo
