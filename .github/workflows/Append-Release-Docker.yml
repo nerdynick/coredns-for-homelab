@@ -16,6 +16,20 @@ jobs:
       attestations: write
     steps:
       - uses: actions/checkout@v6
+      - name: Cache Docker
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Cache GoLang
+        uses: actions/cache@v4
+        with:
+          path: ~/go
+          key: ${{ runner.os }}-golang-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
       - name: Get version
         id: version
         uses: michmich112/extract-version@main
