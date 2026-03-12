@@ -16,18 +16,16 @@ jobs:
       attestations: write
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Docker
-        uses: actions/cache@v5
+      - name: Restore Cache Docker
+        uses: actions/cache/restore@v5
         with:
-          save-always: true
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-      - name: Cache GoLang
-        uses: actions/cache@v5
+      - name: Restore Cache GoLang
+        uses: actions/cache/restore@v5
         with:
-          save-always: true
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
@@ -73,3 +71,18 @@ jobs:
           DOCKER_LOGIN: ${{ secrets.DOCKERHUB_USERNAME }}
           # While this say password, it is recommended to use PATs. See: https://docs.docker.com/security/access-tokens/
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Save Cache Docker
+        uses: actions/cache/save@v5
+        if: always()
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+      - name: Save Cache GoLang
+        uses: actions/cache/save@v5
+        if: always()
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-golang-${{ github.sha }}
