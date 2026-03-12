@@ -44,4 +44,5 @@ jobs:
         run: make docker-build docker-push DOCKER_REPO=${{ vars.DOCKERHUB_REPO }} DOCKER_NAME=${{ vars.DOCKERHUB_NAME }}
         env:
           DOCKER_LOGIN: ${{ secrets.DOCKERHUB_USERNAME }}
+          # While this say password, it is recommended to use PATs. See: https://docs.docker.com/security/access-tokens/
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
