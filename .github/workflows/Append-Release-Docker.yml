@@ -49,12 +49,16 @@ jobs:
         run: make build-append
     
       - name: Tarball
-        run: make tar CUSTOMIZED_VERSION=${{ steps.version.outputs.version }}
+        run: make tar 
+        env:
+          CUSTOMIZED_VERSION: ${{ steps.version.outputs.version }}
       
       - name: Github Release
-        run: make github-create-release github-upload github-publish-release CUSTOMIZED_VERSION=${{ steps.version.outputs.version }} GITHUB_REPO=${{ github.repository }}
+        run: make github-create-release github-upload github-publish-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CUSTOMIZED_VERSION: ${{ steps.version.outputs.version }}
+          GITHUB_REPO: ${{ github.repository }}
       
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -71,6 +75,7 @@ jobs:
           DOCKER_LOGIN: ${{ secrets.DOCKERHUB_USERNAME }}
           # While this say password, it is recommended to use PATs. See: https://docs.docker.com/security/access-tokens/
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          CUSTOMIZED_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Save Cache Docker
         uses: actions/cache/save@v5
