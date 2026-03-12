@@ -29,7 +29,7 @@ jobs:
         run: make build-append
     
       - name: Tarball
-        run: make tar github-push CUSTOMIZED_VERSION=${{ steps.version.outputs.version }}
+        run: make tar CUSTOMIZED_VERSION=${{ steps.version.outputs.version }}
       
       - name: Github Release
         run: make github-create-release github-upload github-publish-release CUSTOMIZED_VERSION=${{ steps.version.outputs.version }} GITHUB_ACCESS_TOKEN=${{ secrets.GITHUB_TOKEN }} GITHUB_REPO=${{ github.repository }}
