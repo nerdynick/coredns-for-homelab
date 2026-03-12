@@ -54,12 +54,20 @@ setup: clean
 build-override: setup
 	rm ./coredns/plugin.cfg
 	cp plugin.cfg ./coredns/plugin.cfg
+	while read line; do \
+		env -C ./coredns go get $${line##*:}; \
+	done < plugin.cfg
+	env -C ./coredns go generate
 	env -C ./coredns make -f Makefile.release build LINUX_ARCH='$(LINUX_ARCH)'
-
 
 .PHONY: build-append
 build-append: setup
 	cat plugin.cfg >> ./coredns/plugin.cfg
+	while read -r line; do \
+		echo "Package - $${line##*:}"; \
+		env -C ./coredns go get $${line##*:}; \
+	done < plugin.cfg
+	env -C ./coredns go generate
 	env -C ./coredns make -f Makefile.release build LINUX_ARCH='$(LINUX_ARCH)'
 
 ##
