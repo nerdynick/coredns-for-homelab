@@ -35,7 +35,7 @@ jobs:
         run: make github-create-release github-upload github-publish-release CUSTOMIZED_VERSION=${{ steps.version.outputs.version }} GITHUB_ACCESS_TOKEN=${{ secrets.GITHUB_TOKEN }} GITHUB_REPO=${{ github.repository }}
       
       - name: Docker Build and Push
-        run: make docker-build docker-push DOCKER_REPO=nerdynik DOCKER_NAME=coredns-for-homelab
+        run: make docker-build docker-push DOCKER_REPO=${{ vars.DOCKERHUB_REPO }} DOCKER_NAME=${{ vars.DOCKERHUB_NAME }}
         env:
           DOCKER_LOGIN: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
