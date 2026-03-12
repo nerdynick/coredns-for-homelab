@@ -11,10 +11,9 @@ jobs:
     name: Build-Append and Release (Docker Hub)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Get version
-        # id must be specified to retrieve the output of the step
-        id: version-step
+        id: version
         uses: michmich112/extract-version@main
         with:
           # specify here the path to your version file (e.g. package.json, pom.xml...)
@@ -24,13 +23,16 @@ jobs:
         run: |
           echo "Version to Release -> $VERSION"
         env:
-          VERSION: ${{ steps.version-step.outputs.version }}
+          VERSION: ${{ steps.version.outputs.version }}
 
       - name: Build CoreDNS
         run: make build-append
     
-      - name: Tarball and Github Release
-        run: make tar github-push VERSION=${{ steps.version-step.outputs.version }} GITHUB_ACCESS_TOKEN=${{ secrets.GITHUB_TOKEN }} GITHUB_OWNER=${{github.repository.owner}} GITHUB_NAME=${{github.repository.id}}
+      - name: Tarball
+        run: make tar github-push CUSTOMIZED_VERSION=${{ steps.version.outputs.version }}
+      
+      - name: Github Release
+        run: make github-create-release github-upload github-publish-release CUSTOMIZED_VERSION=${{ steps.version.outputs.version }} GITHUB_ACCESS_TOKEN=${{ secrets.GITHUB_TOKEN }} GITHUB_REPO=${{ github.repository }}
       
       - name: Docker Build and Push
         run: make docker-build docker-push DOCKER_REPO=nerdynik DOCKER_NAME=coredns-for-homelab

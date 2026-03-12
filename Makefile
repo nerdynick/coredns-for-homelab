@@ -1,8 +1,8 @@
 
 # Repo/Branch to clone from
 # Defaults to the master branch of the base CoreDNS repo
-GIT_REPO:=https://github.com/coredns/coredns
-GIT_BRANCH:=master
+COREDNS_GIT_REPO:=https://github.com/coredns/coredns
+COREDNS_GIT_BRANCH:=master
 
 # What linux architectures to build TARs and Docker Images for
 # This is more or less bound to only linux getting a custom list due to CoreDNS native make files
@@ -14,7 +14,9 @@ LINUX_ARCH:=amd64 arm arm64 riscv64
 ##
 
 # Default version used for the releases will be that of the CoreDNS repo.
-VERSION=$(shell grep 'CoreVersion' ./coredns/coremain/version.go | awk '{ print $$3 }' | tr -d '"')
+COREDNS_VERSION=$(shell grep 'CoreVersion' ./coredns/coremain/version.go | awk '{ print $$3 }' | tr -d '"')
+CUSTOMIZED_VERSION:=
+VERSION=$(CUSTOMIZED_VERSION)-$(COREDNS_VERSION)
 
 # Github Repo
 # Examples: username/repo or github.com/username/repo
@@ -46,7 +48,7 @@ clean:
 
 .PHONY: setup
 setup: clean
-	git clone -b $(GIT_BRANCH) $(GIT_REPO)
+	git clone -b $(COREDNS_GIT_BRANCH) $(COREDNS_GIT_REPO)
 
 .PHONY: build-override
 build-override: setup
@@ -129,6 +131,8 @@ docker-push:
 
 ##
 # Debian Packaging Targets
+#
+# NOTE: Debian Packaging is in development/early-release
 ##
 
 .PHONY: package-deb
