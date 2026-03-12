@@ -1,4 +1,4 @@
-name: Release new build
+name: Build via Append and Release to GH & Docker
 
 on:
   push:
